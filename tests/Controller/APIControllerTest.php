@@ -3,10 +3,7 @@
 namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\Psr7\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Description of APIControllerTest
@@ -15,30 +12,16 @@ use GuzzleHttp\Psr7\Response;
  */
 class APIControllerTest extends WebTestCase {
 
-    protected function setUp() {
-        $mock = new MockHandler([new Response(200, ["welcome" => "Your API is working!"])]);
-        $handler = HandlerStack::create($mock);
-        $this->client = new Client(['handler' => $handler]);
-    }
-
-    public function testWithMockHandler() {
-        $response = $this->client->post("/", null);
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals("OK", $response->getReasonPhrase());
-        $this->assertArrayHasKey("welcome", $response->getHeaders());
-        $this->assertTrue(in_array("Your API is working!", $response->getHeaders()["welcome"]));
-    }
-
     public function testForRoot() {
         $client = static::createClient([], []);
         $client->request("GET", "/");
-        $this->assertSame(200, $client->getResponse()->getStatusCode());
+        $this->assertSame(Response::HTTP_OK, $client->getResponse()->getStatusCode());
     }
 
     public function testForUrlInexistent() {
         $client = static::createClient([], []);
         $client->request("POST", "/api");
-        $this->assertSame(404, $client->getResponse()->getStatusCode());
+        $this->assertSame(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
     }
 
     public function testForUserRenewTokenInexistent() {
@@ -47,7 +30,7 @@ class APIControllerTest extends WebTestCase {
                     'PHP_AUTH_PW' => 'kitten',
         ]);
         $client->request("POST", "/api/retoken");
-        $this->assertSame(401, $client->getResponse()->getStatusCode());
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $client->getResponse()->getStatusCode());
     }
 
     public function testForUserTokenInexistent() {
@@ -56,7 +39,7 @@ class APIControllerTest extends WebTestCase {
                     'PHP_AUTH_PW' => 'kitten',
         ]);
         $client->request("POST", "/api/token");
-        $this->assertSame(401, $client->getResponse()->getStatusCode());
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $client->getResponse()->getStatusCode());
     }
 
     public function testForUserExistent() {
@@ -65,7 +48,7 @@ class APIControllerTest extends WebTestCase {
                     'PHP_AUTH_PW' => 'S3cr37W0rd',
         ]);
         $client->request("POST", "/api/register");
-        $this->assertSame(200, $client->getResponse()->getStatusCode());
+        $this->assertSame(REsponse::HTTP_OK, $client->getResponse()->getStatusCode());
     }
 
     /**
@@ -77,7 +60,7 @@ class APIControllerTest extends WebTestCase {
                     'PHP_AUTH_PW' => 'S3cr37W0rd',
         ]);
         $client->request($httpMethod, $url);
-        $this->assertSame(405, $client->getResponse()->getStatusCode());
+        $this->assertSame(Response::HTTP_METHOD_NOT_ALLOWED, $client->getResponse()->getStatusCode());
     }
 
     public function getUrlsForRegularUsers() {

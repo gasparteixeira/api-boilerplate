@@ -1,0 +1,8 @@
+#Auth
+auth.required: Authentication required
+auth.failure: Authentication failed
+auth.invalid.token: Invalid Token
+auth.user.notfound: User not found
+
+#Register
+register.success: User %name% successful created

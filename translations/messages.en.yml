@@ -5,4 +5,7 @@ auth.invalid.token: Invalid Token
 auth.user.notfound: User not found
 
 #Register
+register.invalid: Form %element% is invalid
 register.success: User %name% successful created
+register.email.used: Email %element% has been used 
+register.failure: User not created

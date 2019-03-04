@@ -7,12 +7,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
-use App\Entity\User;
+use App\Service\RegisterService;
 
 /**
  * Description of RegisterController
@@ -20,6 +18,12 @@ use App\Entity\User;
  * @author Gaspar Teixeira <gaspar.teixeira@gmail.com>
  */
 class RegisterController extends AbstractFOSRestController {
+
+    private $service;
+
+    public function __construct(RegisterService $service) {
+        $this->service = $service;
+    }
 
     /**
      * @Route("/api/register", name="post_register", methods={"POST"})
@@ -67,15 +71,30 @@ class RegisterController extends AbstractFOSRestController {
      */
     public function postRegisterAction(Request $request, TranslatorInterface $translator): JsonResponse {
 
-        if (!$request->headers->has('Authorization'))
-            return new JsonResponse(["message" => $translator->trans("auth.required")], Response::HTTP_UNAUTHORIZED);
+        if ($this->service->hasNoAuthorization($request)) {
+            return $this->service->returnMessage("auth.required", Response::HTTP_UNAUTHORIZED);
+        }
 
+        if ($this->service->hasNoBasicAuth($request)) {
+            return $this->service->returnMessage("auth.failure", Response::HTTP_UNAUTHORIZED);
+        }
 
-        if (($this->getParameter("app_username") !== $request->getUser()) || ($this->getParameter("app_password") !== $request->getPassword()))
-            return new JsonResponse(["message" => $translator->trans("auth.failure")], Response::HTTP_UNAUTHORIZED);
+        $form = $this->service->isFormDataInvalid($request);
 
+        if ($form->error) {
+            return $this->service->returnMessageElement("register.invalid", Response::HTTP_BAD_REQUEST, $form->element);
+        }
 
-        return new JsonResponse(['message' => $translator->trans("register.success", ["%name%" => $request->getUser()])]);
+        if ($this->service->emailHasBeenUsed($form->email)) {
+            return $this->service->returnMessageElement("register.email.used", Response::HTTP_BAD_REQUEST, $form->element);
+        }
+
+        $save = $this->service->saveUser($form);
+        if ($save->success) {
+            return $this->service->returnMessageElement("register.success", Response::HTTP_OK, $form->name);
+        } else {
+            return $this->service->returnMessage("register.failure", Response::HTTP_BAD_REQUEST);
+        }
     }
 
 }

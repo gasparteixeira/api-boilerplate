@@ -140,7 +140,7 @@ class User implements UserInterface {
         $this->roles = $roles;
     }
 
-    public function getSalt(): string {
+    public function getSalt(): ?string {
         return null;
     }
 

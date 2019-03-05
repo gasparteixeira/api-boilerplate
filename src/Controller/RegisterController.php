@@ -4,13 +4,13 @@ namespace App\Controller;
 
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use App\Service\RegisterService;
+use App\Util\ValidatorUtil;
 
 /**
  * Description of RegisterController
@@ -20,9 +20,11 @@ use App\Service\RegisterService;
 class RegisterController extends AbstractFOSRestController {
 
     private $service;
+    private $validator;
 
-    public function __construct(RegisterService $service) {
+    public function __construct(RegisterService $service, ValidatorUtil $validator) {
         $this->service = $service;
+        $this->validator = $validator;
     }
 
     /**
@@ -69,29 +71,29 @@ class RegisterController extends AbstractFOSRestController {
      * )
      *
      */
-    public function postRegisterAction(Request $request, TranslatorInterface $translator): JsonResponse {
+    public function postRegisterAction(Request $request): JsonResponse {
 
-        if ($this->service->hasNoAuthorization($request)) {
+        // validation
+        if (!$this->validator->hasAuthorization($request)) {
             return $this->service->returnMessage("auth.required", Response::HTTP_UNAUTHORIZED);
         }
 
-        if ($this->service->hasNoBasicAuth($request)) {
+        if (!$this->validator->isAuthenticated($request)) {
             return $this->service->returnMessage("auth.failure", Response::HTTP_UNAUTHORIZED);
         }
 
-        $form = $this->service->isFormDataInvalid($request);
-
-        if ($form->error) {
-            return $this->service->returnMessageElement("register.invalid", Response::HTTP_BAD_REQUEST, $form->element);
+        $formData = $this->validator->isFormDataValid($request);
+        if (!$formData->isValid) {
+            return $this->service->returnMessageElement("register.invalid", Response::HTTP_BAD_REQUEST, $formData->element);
         }
 
-        if ($this->service->emailHasBeenUsed($form->email)) {
-            return $this->service->returnMessageElement("register.email.used", Response::HTTP_BAD_REQUEST, $form->element);
+        if (!$this->service->isEmailUnique($request)) {
+            return $this->service->returnMessageElement("register.email.used", Response::HTTP_BAD_REQUEST, $request->request->get("email"));
         }
 
-        $save = $this->service->saveUser($form);
-        if ($save->success) {
-            return $this->service->returnMessageElement("register.success", Response::HTTP_OK, $form->name);
+        // persist user
+        if ($this->service->isUserSaved($request)) {
+            return $this->service->returnMessageElement("register.success", Response::HTTP_OK, $request->request->get("name"));
         } else {
             return $this->service->returnMessage("register.failure", Response::HTTP_BAD_REQUEST);
         }

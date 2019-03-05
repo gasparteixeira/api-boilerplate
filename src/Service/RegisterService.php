@@ -4,7 +4,6 @@ namespace App\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -32,69 +31,34 @@ class RegisterService {
         $this->encoder = $encoder;
     }
 
-    public function hasNoAuthorization($request) {
-        return !$request->headers->has('Authorization');
+    public function isEmailUnique($request): bool {
+        $user = $this->em->getRepository(User::class)->findOneBy(["email" => $request->request->get("email")]);
+        return NULL === $user;
     }
 
-    public function hasNoBasicAuth($request) {
-        return (($this->params->get("app_username") !== $request->getUser()) || ($this->params->get("app_password") !== $request->getPassword()));
-    }
-
-    public function isFormDataInvalid($request): \stdClass {
-
-        $object = new \stdClass();
-        $object->element = "";
-        $object->error = false;
-        $object->name = $request->request->get("name");
-        $object->email = $request->request->get("email");
-        $object->password = $request->request->get("password");
-
-        if (empty($object->name)) {
-            $object->element = "name";
-            $object->error = true;
-        } else if (!filter_var($object->email, FILTER_VALIDATE_EMAIL)) {
-            $object->element = "email";
-            $object->error = true;
-        } else if (empty($object->password)) {
-            $object->element = "password";
-            $object->error = true;
-        }
-
-        return $object;
-    }
-
-    public function emailHasBeenUsed($email) {
-        $user = $this->em->getRepository(User::class)->findOneBy(["email" => $email]);
-        if ($user)
-            return true;
-        return false;
-    }
-
-    public function saveUser($form) {
+    public function isUserSaved($request): bool {
         $user = new User();
-        $user->setName($form->name);
-        $user->setEmail($form->email);
-        $user->setPassword($form->password);
+        $user->setName($request->request->get("name"));
+        $user->setEmail($request->request->get("email"));
+        $user->setPassword($request->request->get("password"));
         $password = $this->encoder->encodePassword($user, $user->getPassword());
         $user->setPassword($password);
         $user->setRoles(["ROLE_USER"]);
-        $object = new \stdClass();
-        $object->success = true;
         try {
             $this->em->persist($user);
             $this->em->flush();
         } catch (\Exception $ex) {
-            $object->success = false;
             $this->logger->error($ex->getMessage());
+            return false;
         }
-        return $object;
+        return true;
     }
 
-    public function returnMessage($error, $code) {
+    public function returnMessage($error, $code): JsonResponse {
         return new JsonResponse(["message" => $this->translator->trans($error)], $code);
     }
 
-    public function returnMessageElement($error, $code, $element) {
+    public function returnMessageElement($error, $code, $element): JsonResponse {
         return new JsonResponse(["message" => $this->translator->trans($error, ["%element%" => $element])], $code);
     }
 

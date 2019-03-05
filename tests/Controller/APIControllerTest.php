@@ -42,13 +42,13 @@ class APIControllerTest extends WebTestCase {
         $this->assertSame(Response::HTTP_UNAUTHORIZED, $client->getResponse()->getStatusCode());
     }
 
-    public function testForUserExistent() {
+    public function testForUserExistentButNoFormData() {
         $client = static::createClient([], [
                     'PHP_AUTH_USER' => 'boilerplate',
                     'PHP_AUTH_PW' => 'S3cr37W0rd',
         ]);
         $client->request("POST", "/api/register");
-        $this->assertSame(REsponse::HTTP_OK, $client->getResponse()->getStatusCode());
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
     }
 
     /**

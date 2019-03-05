@@ -1,11 +1,19 @@
 #Auth
-auth.required: Authentication required
-auth.failure: Authentication failed
-auth.invalid.token: Invalid Token
-auth.user.notfound: User not found
+auth:
+    required: Authentication required
+    failure: Authentication failed
+    token:
+        invalid: Token invalid
+    user:
+        not_found: User not found
+ 
 
 #Register
-register.invalid: Form %element% is invalid
-register.success: User %name% successful created
-register.email.used: Email %element% has been used 
-register.failure: User not created
+register:
+    invalid: The %element% is invalid
+    failure: The user was not created
+    success: The user %element% has been created successfully
+    email:
+        invalid: The email %element% is invalid
+        used: The email %element% is alerady used
+ 

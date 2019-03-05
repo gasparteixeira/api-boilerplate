@@ -30,11 +30,6 @@ class User implements UserInterface {
     private $email;
 
     /**
-     * @ORM\Column(type="string", length=80)
-     */
-    private $username;
-
-    /**
      * @ORM\Column(type="string", length=200)
      */
     private $password;
@@ -45,13 +40,13 @@ class User implements UserInterface {
     private $avatar;
 
     /**
-     * @ORM\Column(type="string", length=32)
+     * @ORM\Column(type="string", length=32, nullable=true)
      */
     private $change_password;
 
     /**
      *
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, nullable=true)
      */
     private $hash;
 
@@ -109,13 +104,7 @@ class User implements UserInterface {
     }
 
     public function getUsername(): string {
-        return $this->username;
-    }
-
-    public function setUsername(string $username): self {
-        $this->username = $username;
-
-        return $this;
+        return $this->email;
     }
 
     public function getPassword(): string {

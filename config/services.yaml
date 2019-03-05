@@ -31,3 +31,6 @@ services:
     
     App\Service\RegisterService:    
         arguments: ['@doctrine.orm.entity_manager','@logger']
+    
+    App\Util\ValidatorUtil:
+        arguments: ['@logger']

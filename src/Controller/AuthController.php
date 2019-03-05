@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
@@ -47,7 +46,7 @@ class AuthController extends AbstractController {
     public function postTokenAction(Request $request, TranslatorInterface $translator): JsonResponse {
         $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['username' => $request->getUser()]);
         if (!$user) {
-            $data = ["message" => $translator->trans("auth.user.notfound")];
+            $data = ["message" => $translator->trans("auth.user.not_found")];
             return new JsonResponse($data, Response::HTTP_FORBIDDEN);
         }
 
@@ -67,7 +66,6 @@ class AuthController extends AbstractController {
 
     /**
      * @Route("/api/retoken", name="auth_renew_token", methods={"POST"})
-     * @Method("POST")
      * @SWG\Post(
      *     path="/api/retoken",
      *     summary="Request to renew the token",

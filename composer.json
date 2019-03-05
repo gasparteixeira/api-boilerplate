@@ -3,6 +3,7 @@
     "description": "Boilerplate to create a REST API with Symfony 4.2",
     "type": "project",
     "keywords": ["boilerplate, php, api, rest, symfonfy 4.2, jwt"],
+    "version": "1.0.0",
     "license": "MIT",
     "authors": [{
             "name": "Gaspar Teixeira",

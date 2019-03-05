@@ -58,13 +58,16 @@ class Authenticator extends AbstractGuardAuthenticator {
         $data = $this->_jwtProvider->decode($credentials);
 
         if (!$data)
-            throw new CustomUserMessageAuthenticationException($this->_translator->trans("auth.invalid.token"));
+            throw new CustomUserMessageAuthenticationException($this->_translator->trans("auth.token.invalid"));
 
-        $username = $data['username'];
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => $username]);
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
 
         if (!$user)
             throw new AuthenticationCredentialsNotFoundException();
+
+
+        if ($user->getHash() != $data['hash'])
+            throw new CustomUserMessageAuthenticationException($this->_translator->trans("auth.token.expired"));
 
         return $user;
     }

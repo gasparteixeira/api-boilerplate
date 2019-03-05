@@ -4,6 +4,7 @@ auth:
     failure: Authentication failed
     token:
         invalid: Token invalid
+        expired: Token expired
     user:
         not_found: User not found
         bad_credentials: Credentials invalid

@@ -13,6 +13,8 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use App\Entity\User;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\TokenExtractor\AuthorizationHeaderTokenExtractor;
+use App\Util\ValidatorUtil;
 
 /**
  * Description of AuthController
@@ -23,10 +25,12 @@ class AuthController extends AbstractController {
 
     private $passwordEncoder;
     private $jwtEncoder;
+    private $validator;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder, JWTEncoderInterface $jwtEncoder) {
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder, JWTEncoderInterface $jwtEncoder, ValidatorUtil $validator) {
         $this->passwordEncoder = $passwordEncoder;
         $this->jwtEncoder = $jwtEncoder;
+        $this->validator = $validator;
     }
 
     /**
@@ -71,8 +75,9 @@ class AuthController extends AbstractController {
         $token = $this->jwtEncoder->encode([
             'email' => $user->getEmail(),
             'name' => $user->getName(),
+            'roles' => $user->getRoles(),
             'hash' => $user->getHash(),
-            'exp' => time() + $this->getParameter("jwt_token_ttl") // 1 hour expiration
+            'exp' => time() + $this->getParameter("jwt_token_ttl")
         ]);
         return new JsonResponse(['token' => $token], Response::HTTP_OK);
     }
@@ -100,9 +105,44 @@ class AuthController extends AbstractController {
      * )
      *
      */
-    public function postRenewTokenAction(Request $request, TranslatorInterface $translator): JsonResponse {
+    public function postRenewTokenAction(Request $request): JsonResponse {
 
-        return new JsonResponse(['token' => ""]);
+        if (!$this->validator->hasAuthorization($request)) {
+            return $this->validator->returnMessage("auth.required", Response::HTTP_UNAUTHORIZED);
+        }
+
+        $extractor = new AuthorizationHeaderTokenExtractor(
+                'Bearer', 'Authorization'
+        );
+
+        $token = $extractor->extract($request);
+
+        if (!$token) {
+            return $this->validator->returnMessage("auth.token.invalid", Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = $this->jwtEncoder->decode($token);
+
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+        if (!$user) {
+            return $this->validator->returnMessage("auth.user.not_found", Response::HTTP_UNAUTHORIZED);
+        }
+
+
+        $em = $this->getDoctrine()->getManager();
+        $hash = substr(sha1(rand()), 0, 16);
+        $user->setHash($hash);
+        $user->setLastLoginAt(new \DateTime("now"));
+        $em->flush();
+
+        $tokenReady = $this->jwtEncoder->encode([
+            'email' => $user->getEmail(),
+            'name' => $user->getName(),
+            'roles' => $user->getRoles(),
+            'hash' => $user->getHash(),
+            'exp' => time() + $this->getParameter("jwt_token_ttl")
+        ]);
+        return new JsonResponse(['token' => $tokenReady], Response::HTTP_OK);
     }
 
 }

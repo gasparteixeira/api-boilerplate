@@ -75,27 +75,27 @@ class RegisterController extends AbstractFOSRestController {
 
         // validation
         if (!$this->validator->hasAuthorization($request)) {
-            return $this->service->returnMessage("auth.required", Response::HTTP_UNAUTHORIZED);
+            return $this->validator->returnMessage("auth.required", Response::HTTP_UNAUTHORIZED);
         }
 
         if (!$this->validator->isAuthenticated($request)) {
-            return $this->service->returnMessage("auth.failure", Response::HTTP_UNAUTHORIZED);
+            return $this->validator->returnMessage("auth.failure", Response::HTTP_UNAUTHORIZED);
         }
 
         $formData = $this->validator->isFormDataValid($request);
         if (!$formData->isValid) {
-            return $this->service->returnMessageElement("register.invalid", Response::HTTP_BAD_REQUEST, $formData->element);
+            return $this->validator->returnMessageElement("register.invalid", Response::HTTP_BAD_REQUEST, $formData->element);
         }
 
         if (!$this->service->isEmailUnique($request)) {
-            return $this->service->returnMessageElement("register.email.used", Response::HTTP_BAD_REQUEST, $request->request->get("email"));
+            return $this->validator->returnMessageElement("register.email.used", Response::HTTP_BAD_REQUEST, $request->request->get("email"));
         }
 
         // persist user
         if ($this->service->isUserSaved($request)) {
-            return $this->service->returnMessageElement("register.success", Response::HTTP_OK, $request->request->get("name"));
+            return $this->validator->returnMessageElement("register.success", Response::HTTP_OK, $request->request->get("name"));
         } else {
-            return $this->service->returnMessage("register.failure", Response::HTTP_BAD_REQUEST);
+            return $this->validator->returnMessage("register.failure", Response::HTTP_BAD_REQUEST);
         }
     }
 

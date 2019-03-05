@@ -5,7 +5,7 @@ security:
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
     providers:
         database_users: 
-            entity: { class: App:User , property: username }
+            entity: { class: App:User , property: email }
         
     firewalls:
         dev:
@@ -13,7 +13,6 @@ security:
             security: false
         main:
             anonymous: ~
-            logout: ~
             
         api:
             pattern:   ^/api
@@ -35,4 +34,3 @@ security:
         - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/token, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/doc, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }

@@ -7,11 +7,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use App\Entity\User;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 
 /**
  * Description of AuthController
@@ -19,6 +20,14 @@ use App\Entity\User;
  * @author Gaspar Teixeira <gaspar.teixeira@gmail.com>
  */
 class AuthController extends AbstractController {
+
+    private $passwordEncoder;
+    private $jwtEncoder;
+
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder, JWTEncoderInterface $jwtEncoder) {
+        $this->passwordEncoder = $passwordEncoder;
+        $this->jwtEncoder = $jwtEncoder;
+    }
 
     /**
      * @Route("/api/token", name="auth_token", methods={"POST"})
@@ -44,24 +53,28 @@ class AuthController extends AbstractController {
      *
      */
     public function postTokenAction(Request $request, TranslatorInterface $translator): JsonResponse {
-        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['username' => $request->getUser()]);
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $request->getUser()]);
         if (!$user) {
-            $data = ["message" => $translator->trans("auth.user.not_found")];
-            return new JsonResponse($data, Response::HTTP_FORBIDDEN);
+            return new JsonResponse(["message" => $translator->trans("auth.user.not_found")], Response::HTTP_FORBIDDEN);
         }
 
-
-        $isValid = $this->get('security.password_encoder')->isPasswordValid($user, $request->getPassword());
-
+        $isValid = $this->passwordEncoder->isPasswordValid($user, $request->getPassword());
         if (!$isValid)
-            throw new BadCredentialsException();
+            return new JsonResponse(["message" => $translator->trans("auth.user.bad_credentials")], Response::HTTP_FORBIDDEN);
 
-        $token = $this->get('lexik_jwt_authentication.encoder')
-                ->encode([
-            'username' => $user->getUsername(),
-            'exp' => time() + 3600 // 1 hour expiration
+        $em = $this->getDoctrine()->getManager();
+        $hash = substr(sha1(rand()), 0, 16);
+        $user->setHash($hash);
+        $user->setLastLoginAt(new \DateTime("now"));
+        $em->flush();
+
+        $token = $this->jwtEncoder->encode([
+            'email' => $user->getEmail(),
+            'name' => $user->getName(),
+            'hash' => $user->getHash(),
+            'exp' => time() + $this->getParameter("jwt_token_ttl") // 1 hour expiration
         ]);
-        return new JsonResponse(['token' => $token]);
+        return new JsonResponse(['token' => $token], Response::HTTP_OK);
     }
 
     /**

@@ -7,6 +7,7 @@ parameters:
     locale: 'en'
     app_username: boilerplate
     app_password: S3cr37W0rd
+    jwt_token_ttl: '%env(JWT_TOKEN_TTL)%'
 
 services:
     # default configuration for services in *this* file

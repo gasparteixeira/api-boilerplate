@@ -2,7 +2,7 @@
     "name": "gasparteixeira/api-boilerplate",
     "description": "Boilerplate to create a REST API with Symfony 4.2",
     "type": "project",
-    "version": "1.0.0",
+    "keywords": ["boilerplate, php, api, rest, symfonfy 4.2, jwt"],
     "license": "MIT",
     "authors": [{
             "name": "Gaspar Teixeira",
@@ -74,6 +74,7 @@
     "conflict": {
         "symfony/symfony": "*"
     },
+    "minimum-stability": "dev",
     "extra": {
         "symfony": {
             "allow-contrib": true,

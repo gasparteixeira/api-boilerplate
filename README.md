@@ -63,7 +63,7 @@ $ php bin/console server:run
 ### Testing
 > You can test it using Postman or through the terminal with curl using the username and password you defined in config\services.yml
 ```sh
-curl -X POST -H "Content-Type: application/json" http://localhost:8000/api/token -d '{"username": "","password": ""}'
+curl -X POST -H "Authorization: Basic $(echo -n api@boilerplate.com:12345 | base64)" http://localhost:8000/api/token
 ```
 > Response must start like:
 ```sh

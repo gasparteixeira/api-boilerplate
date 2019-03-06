@@ -88,6 +88,7 @@
         "symfony/phpunit-bridge": "4.2.*",
         "symfony/web-server-bundle": "4.2.*"
     },
+    "minimum-stability": "dev",
     "repositories": [ 
         {
             "name": "gasparteixeira/api-boilerplate",

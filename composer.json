@@ -87,5 +87,17 @@
         "symfony/maker-bundle": "^1.11",
         "symfony/phpunit-bridge": "4.2.*",
         "symfony/web-server-bundle": "4.2.*"
-    }
+    },
+    "repositories": [ {
+        "type": "package",
+        "package": {
+            "name": "gasparteixeira/api-boilerplate",
+            "version": "1.0.1",
+            "source": {
+                "url": "https://github.com/gasparteixeira/api-boilerplate.git",
+                "type": "git",
+                "reference": "master"
+              }
+         }
+    }]
 }

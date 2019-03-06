@@ -51,6 +51,11 @@ $ php bin/console make:migration
 ```sh
 $ php bin/console doctrine:migrations:migrate
 ```
+### Load fixtures 
+> add an user (src/DataFixtures/UserFixtures) to make the test
+```sh
+$ php bin/console doctrine:fixtures:load
+``` 
 ### Running 
 ```sh
 $ php bin/console server:run

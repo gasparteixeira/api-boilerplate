@@ -81,6 +81,7 @@
         }
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^3.1@dev",
         "guzzlehttp/guzzle": "^6.3",
         "symfony/browser-kit": "4.2.*",
         "symfony/debug-pack": "^1.0",

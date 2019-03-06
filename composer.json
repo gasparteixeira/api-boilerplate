@@ -2,7 +2,7 @@
     "name": "gasparteixeira/api-boilerplate",
     "description": "Boilerplate to create a REST API with Symfony 4.2",
     "type": "project",
-    "keywords": ["boilerplate, php, api, rest, symfonfy 4.2, jwt"],
+    "keywords": ["boilerplate", "php7", "api", "rest", "symfonfy4", "jwt"],
     "license": "MIT",
     "authors": [{
             "name": "Gaspar Teixeira",

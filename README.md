@@ -38,6 +38,19 @@ $ mkdir -p config/jwt # For Symfony3+, no need of the -p option
 $ openssl genrsa -out config/jwt/private.pem -aes256 4096
 $ openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
 ```
+### Creating database
+> execute the command line to create your database
+```sh
+$ php bin/console doctrine:database:create
+```
+> make migrations
+```sh
+$ php bin/console make:migration
+```
+> lets commit the migration (it will create a table called user)
+```sh
+$ php bin/console doctrine:migrations:migrate
+```
 ### Running 
 ```sh
 $ php bin/console server:run
